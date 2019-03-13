@@ -1,0 +1,4 @@
+export const ACTION_TYPE = {
+  AUDIT_START: 'AUDIT_START',
+  AUDIT_STOP: 'AUDIT_STOP',
+};
