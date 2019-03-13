@@ -1,5 +1,5 @@
 import { Constants, Location, Permissions } from 'expo';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Button, Platform, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 
 const styles = StyleSheet.create({
@@ -48,9 +48,11 @@ export default class App extends React.Component {
       text = JSON.stringify(location);
     }
 
+    const { navigate } = this.props.navigation;
     return (
       <View style={styles.container}>
         <Text style={styles.paragraph}>{text}</Text>
+        <Button title="Start new audit" onPress={() => navigate('NewAudit')} />
       </View>
     );
   }
