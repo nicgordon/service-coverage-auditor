@@ -2,15 +2,19 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Button, Text, View } from 'react-native';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { Fragment } from 'react';
 
 import auditActions from '../../state/actions/audit';
+import Auditor from '../../components/auditor';
 
-const NewAuditScreen = ({ actions, auditIsRunning }) => (
+const NewAuditScreen = ({ actions, auditIsRunning, pingEndpoint }) => (
   <View>
     <Text>Audit screen boom!</Text>
     {auditIsRunning ? (
-      <Button title="Stop" onPress={() => actions.audit.stopAudit()} />
+      <Fragment>
+        <Auditor pingEndpoint={pingEndpoint} />
+        <Button title="Stop" onPress={() => actions.audit.stopAudit()} />
+      </Fragment>
     ) : (
       <Button title="Start" onPress={() => actions.audit.startAudit()} />
     )}
@@ -25,6 +29,7 @@ NewAuditScreen.propTypes = {
     }).isRequired,
   }).isRequired,
   auditIsRunning: PropTypes.bool.isRequired,
+  pingEndpoint: PropTypes.string.isRequired,
 };
 
 NewAuditScreen.navigationOptions = {
@@ -33,6 +38,7 @@ NewAuditScreen.navigationOptions = {
 
 const mapStateToProps = state => ({
   auditIsRunning: state.audit.isRunning,
+  pingEndpoint: state.settings.pingEndpoint,
 });
 
 const mapDispatchToProps = dispatch => ({
