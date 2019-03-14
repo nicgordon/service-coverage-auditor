@@ -61,6 +61,22 @@ const prepare = async () => {
 };
 
 /**
+ * Creates a new audit record.
+ */
+const createAudit = async ({ startedAt, network, endpoint }) => {
+  const sql = `insert into audit (startedAt, network, endpoint) values (?, ?, ?);`;
+  const params = [startedAt, network, endpoint];
+
+  try {
+    const audits = await performTransaction(sql, params);
+    return _.get(audits, 'rows.array', []);
+  } catch (error) {
+    // Just throw errors for now
+    throw error;
+  }
+};
+
+/**
  * Fetches all audit records.
  */
 const fetchAllAudits = async () => {
@@ -112,6 +128,7 @@ const fetchPingsByAuditId = async auditId => {
 // saveAudit
 
 export default {
+  createAudit,
   fetchAllAudits,
   fetchAudit,
   fetchPingsByAuditId,
