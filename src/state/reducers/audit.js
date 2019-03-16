@@ -4,6 +4,7 @@ import { ACTION_TYPE } from '../../constants';
 
 const INITIAL_STATE = {
   isRunning: false,
+  lastPing: null,
   location: null,
 };
 
@@ -19,6 +20,13 @@ const auditReducer = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         isRunning: false,
+        lastPing: null,
+      };
+
+    case ACTION_TYPE.LAST_PING_SET:
+      return {
+        ...state,
+        lastPing: action.lastPing,
       };
 
     case ACTION_TYPE.LOCATION_SET:

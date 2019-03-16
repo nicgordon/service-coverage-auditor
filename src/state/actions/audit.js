@@ -1,5 +1,10 @@
 import { ACTION_TYPE } from '../../constants';
 
+const setLastPing = lastPing => ({
+  lastPing,
+  type: ACTION_TYPE.LAST_PING_SET,
+});
+
 const setLocation = ({ accuracy, latitude, longitude }) => ({
   accuracy,
   latitude,
@@ -16,6 +21,7 @@ const stopAudit = () => ({
 });
 
 export default {
+  setLastPing,
   setLocation,
   startAudit,
   stopAudit,
