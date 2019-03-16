@@ -1,7 +1,10 @@
+import _ from 'lodash';
+
 import { ACTION_TYPE } from '../../constants';
 
 const INITIAL_STATE = {
   isRunning: false,
+  location: null,
 };
 
 const auditReducer = (state = INITIAL_STATE, action) => {
@@ -16,6 +19,12 @@ const auditReducer = (state = INITIAL_STATE, action) => {
       return {
         ...state,
         isRunning: false,
+      };
+
+    case ACTION_TYPE.LOCATION_SET:
+      return {
+        ...state,
+        location: _.pick(action, ['accuracy', 'latitude', 'longitude']),
       };
 
     default:
