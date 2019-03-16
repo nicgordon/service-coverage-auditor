@@ -11,7 +11,7 @@ let locationSubscription;
 
 function stopAudit() {
   isAuditing = false;
-  if (_.isFunction(locationSubscription.remove)) {
+  if (_.isFunction(_.get(locationSubscription, 'remove'))) {
     locationSubscription.remove();
   }
 }
