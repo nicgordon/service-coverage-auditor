@@ -1,6 +1,7 @@
-import { Constants, Location, Permissions } from 'expo';
-import { Button, Platform, StyleSheet, Text, View } from 'react-native';
+import { Button, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
+
+import getDeviceInfo from '../../utils/get-device-info';
 
 const styles = StyleSheet.create({
   container: {
@@ -11,49 +12,11 @@ const styles = StyleSheet.create({
   },
 });
 
-export default class App extends React.Component {
-  state = {
-    location: null,
-    errorMessage: null,
-  };
+const HomeScreen = ({ navigation }) => (
+  <View style={styles.container}>
+    <Text style={styles.paragraph}>{getDeviceInfo()}</Text>
+    <Button title="Start new audit" onPress={() => navigation.navigate('NewAudit')} />
+  </View>
+);
 
-  componentWillMount() {
-    if (Platform.OS === 'android' && !Constants.isDevice) {
-      this.setState({
-        errorMessage: 'Oops, this will not work on Sketch in an Android emulator. Try it on your device!',
-      });
-    } else {
-      this.getLocationAsync();
-    }
-  }
-
-  getLocationAsync = async () => {
-    const { status } = await Permissions.askAsync(Permissions.LOCATION);
-    if (status !== 'granted') {
-      this.setState({
-        errorMessage: 'Permission to access location was denied',
-      });
-    }
-
-    const location = await Location.getCurrentPositionAsync({});
-    this.setState({ location });
-  };
-
-  render() {
-    let text = 'Waiting..';
-    const { errorMessage, location } = this.state;
-    if (errorMessage) {
-      text = errorMessage;
-    } else if (location) {
-      text = JSON.stringify(location);
-    }
-
-    const { navigate } = this.props.navigation;
-    return (
-      <View style={styles.container}>
-        <Text style={styles.paragraph}>{text}</Text>
-        <Button title="Start new audit" onPress={() => navigate('NewAudit')} />
-      </View>
-    );
-  }
-}
+export default HomeScreen;
