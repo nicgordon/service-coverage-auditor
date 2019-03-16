@@ -40,7 +40,7 @@ class NewAuditScreen extends PureComponent {
   }
 
   render() {
-    const { actions, auditIsRunning, location } = this.props;
+    const { actions, auditIsRunning, lastPing, location } = this.props;
     const { locationPermissionGranted, locationServicesEnabled } = this.state;
 
     return (
@@ -54,8 +54,10 @@ class NewAuditScreen extends PureComponent {
           <Fragment>
             <Button disabled={!locationPermissionGranted} title="Stop" onPress={() => actions.audit.stopAudit()} />
             <Text>{`
-              latitude: ${_.get(location, 'latitude')},
-              longitude: ${_.get(location, 'longitude')},
+              latitude: ${_.get(location, 'latitude')}
+              longitude: ${_.get(location, 'longitude')}
+              accuracy: ${_.get(location, 'accuracy')}m
+              ping: ${lastPing || 0}ms
             `}</Text>
           </Fragment>
         ) : (
@@ -74,10 +76,12 @@ NewAuditScreen.propTypes = {
     }).isRequired,
   }).isRequired,
   auditIsRunning: PropTypes.bool.isRequired,
+  lastPing: PropTypes.number,
   location: PropTypes.shape({}),
 };
 
 NewAuditScreen.defaultProps = {
+  lastPing: null,
   location: null,
 };
 
@@ -87,6 +91,7 @@ NewAuditScreen.navigationOptions = {
 
 const mapStateToProps = state => ({
   auditIsRunning: state.audit.isRunning,
+  lastPing: state.audit.lastPing,
   location: state.audit.location,
   pingEndpoint: state.settings.pingEndpoint,
 });
