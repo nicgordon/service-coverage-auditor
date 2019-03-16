@@ -13,3 +13,4 @@
 - **result** - integer (milliseconds)
 - **latitude** - double
 - **longitude** - double
+- **locationAccuracy** - double

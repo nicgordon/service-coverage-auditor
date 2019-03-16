@@ -48,7 +48,8 @@ const prepare = async () => {
     createdAt text,
     result integer,
     latitude double,
-    longitude double
+    longitude double,
+    locationAccuracy double
   );`;
 
   try {
