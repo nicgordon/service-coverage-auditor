@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { bindActionCreators } from 'redux';
 import { Button, Text, View } from 'react-native';
 import { connect } from 'react-redux';
@@ -39,7 +40,7 @@ class NewAuditScreen extends PureComponent {
   }
 
   render() {
-    const { actions, auditIsRunning } = this.props;
+    const { actions, auditIsRunning, location } = this.props;
     const { locationPermissionGranted, locationServicesEnabled } = this.state;
 
     return (
@@ -52,6 +53,10 @@ class NewAuditScreen extends PureComponent {
         {auditIsRunning ? (
           <Fragment>
             <Button disabled={!locationPermissionGranted} title="Stop" onPress={() => actions.audit.stopAudit()} />
+            <Text>{`
+              latitude: ${_.get(location, 'latitude')},
+              longitude: ${_.get(location, 'longitude')},
+            `}</Text>
           </Fragment>
         ) : (
           <Button title="Start" onPress={() => actions.audit.startAudit()} />
@@ -69,6 +74,11 @@ NewAuditScreen.propTypes = {
     }).isRequired,
   }).isRequired,
   auditIsRunning: PropTypes.bool.isRequired,
+  location: PropTypes.shape({}),
+};
+
+NewAuditScreen.defaultProps = {
+  location: null,
 };
 
 NewAuditScreen.navigationOptions = {
@@ -77,6 +87,7 @@ NewAuditScreen.navigationOptions = {
 
 const mapStateToProps = state => ({
   auditIsRunning: state.audit.isRunning,
+  location: state.audit.location,
   pingEndpoint: state.settings.pingEndpoint,
 });
 
