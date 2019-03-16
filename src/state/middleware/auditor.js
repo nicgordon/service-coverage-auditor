@@ -7,13 +7,12 @@ import auditActions from '../actions/audit';
 import delay from '../../utils/delay';
 
 let isAuditing = false;
-let stopLocationUpdates;
+let locationSubscription;
 
 function stopAudit() {
-  console.log('Audit stopping.');
   isAuditing = false;
-  if (_.isFunction(stopLocationUpdates)) {
-    stopLocationUpdates();
+  if (_.isFunction(locationSubscription.remove)) {
+    locationSubscription.remove();
   }
 }
 
@@ -24,7 +23,6 @@ async function audit({ actions, pingEndpoint }) {
 
   try {
     const start = new Date();
-    console.log(`Pinging ${pingEndpoint}`);
     const pingResult = await global.fetch(pingEndpoint, { method: 'HEAD' });
 
     // Ignore the last ping if the audit was cancelled
@@ -33,12 +31,10 @@ async function audit({ actions, pingEndpoint }) {
     }
 
     const end = new Date();
-    console.log(
-      `Result: ${_.get(pingResult, 'ok')}`,
-      `Status: ${_.get(pingResult, 'status')}`,
-      `Time: ${end - start}ms.`,
-    );
-    // @TODO: Store the result somewhere
+    const time = end - start;
+    console.log(`Result: ${_.get(pingResult, 'ok')}`, `Status: ${_.get(pingResult, 'status')}`, `Time: ${time}ms.`);
+    actions.audit.setLastPing(time);
+    // @TODO: Store the result in the database
 
     // Recursively call this function, after a 5sec delay
     await delay(5000);
@@ -51,15 +47,13 @@ async function audit({ actions, pingEndpoint }) {
 }
 
 async function startAudit({ actions, pingEndpoint }) {
-  console.log('Audit starting.');
   try {
-    stopLocationUpdates = await Location.watchPositionAsync(
+    locationSubscription = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.Highest,
-        timeInterval: 500,
+        distanceInterval: 1,
       },
       location => {
-        console.log('Updating location.');
         actions.audit.setLocation(_.get(location, 'coords'));
       },
     );
