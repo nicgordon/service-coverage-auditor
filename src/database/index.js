@@ -63,15 +63,47 @@ const prepare = async () => {
 };
 
 /**
- * Creates a new audit record.
+ * Fetches an audit record by its id.
  */
-const createAudit = async ({ startedAt, network, endpoint, device }) => {
-  const sql = `insert into audit (startedAt, network, endpoint, device) values (?, ?, ?, ?);`;
-  const params = [startedAt, network, endpoint, device];
+const fetchAudit = async id => {
+  const sql = `select * from audit where id = ?;`;
+  const params = [id];
 
   try {
     const audits = await performTransaction(sql, params);
-    return _.get(audits, 'rows.array', []);
+    return _.head(_.get(audits, 'rows._array', []));
+  } catch (error) {
+    // Just throw errors for now
+    throw error;
+  }
+};
+
+/**
+ * Creates a new audit record.
+ */
+const createAudit = async ({ startedAt, network, endpoint, device }) => {
+  const insertSql = `insert into audit (startedAt, network, endpoint, device) values (?, ?, ?, ?);`;
+  const params = [startedAt, network, endpoint, device];
+
+  try {
+    const insertResult = await performTransaction(insertSql, params);
+    const audit = await fetchAudit(_.get(insertResult, 'insertId'));
+    return audit;
+  } catch (error) {
+    // Just throw errors for now
+    throw error;
+  }
+};
+
+/**
+ * Creates a new ping record.
+ */
+const createPing = async ({ auditId, createdAt, result, latitude, longitude, locationAccuracy }) => {
+  const insertSql = `insert into ping (auditId, createdAt, result, latitude, longitude, locationAccuracy) values (?, ?, ?, ?, ?, ?);`;
+  const params = [auditId, createdAt, result, latitude, longitude, locationAccuracy];
+
+  try {
+    await performTransaction(insertSql, params);
   } catch (error) {
     // Just throw errors for now
     throw error;
@@ -86,23 +118,7 @@ const fetchAllAudits = async () => {
 
   try {
     const audits = await performTransaction(sql);
-    return _.get(audits, 'rows.array', []);
-  } catch (error) {
-    // Just throw errors for now
-    throw error;
-  }
-};
-
-/**
- * Fetches an audit record by its id.
- */
-const fetchAudit = async id => {
-  const sql = `select * from audit where id = ?;`;
-  const params = [id];
-
-  try {
-    const audits = await performTransaction(sql, params);
-    return _.get(audits, 'rows.array', []);
+    return _.get(audits, 'rows._array', []);
   } catch (error) {
     // Just throw errors for now
     throw error;
@@ -117,8 +133,8 @@ const fetchPingsByAuditId = async auditId => {
   const params = [auditId];
 
   try {
-    const audits = await performTransaction(sql, params);
-    return _.get(audits, 'rows.array', []);
+    const pings = await performTransaction(sql, params);
+    return _.get(pings, 'rows._array', []);
   } catch (error) {
     // Just throw errors for now
     throw error;
@@ -131,6 +147,7 @@ const fetchPingsByAuditId = async auditId => {
 
 export default {
   createAudit,
+  createPing,
   fetchAllAudits,
   fetchAudit,
   fetchPingsByAuditId,

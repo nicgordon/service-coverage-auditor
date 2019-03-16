@@ -4,7 +4,9 @@ import { Location } from 'expo';
 
 import { ACTION_TYPE } from '../../constants';
 import auditActions from '../actions/audit';
+import database from '../../database';
 import delay from '../../utils/delay';
+import getDeviceInfo from '../../utils/get-device-info';
 
 let isAuditing = false;
 let locationSubscription;
@@ -16,7 +18,7 @@ function stopAudit() {
   }
 }
 
-async function audit({ actions, pingEndpoint }) {
+async function audit({ actions, auditRecord, getState, pingEndpoint }) {
   if (!isAuditing) {
     return;
   }
@@ -32,13 +34,25 @@ async function audit({ actions, pingEndpoint }) {
 
     const end = new Date();
     const time = end - start;
-    console.log(`Result: ${_.get(pingResult, 'ok')}`, `Status: ${_.get(pingResult, 'status')}`, `Time: ${time}ms.`);
+
+    // Store the ping in state so we can display it to the user
     actions.audit.setLastPing(time);
-    // @TODO: Store the result in the database
+
+    const state = getState();
+    const location = _.get(state, 'audit.location');
+
+    await database.createPing({
+      auditId: auditRecord.id,
+      createdAt: new Date().toISOString(),
+      result: _.get(pingResult, 'status') === 200 ? time : 0, // @TODO: This kinda sucks, think about a better schema
+      latitude: _.get(location, 'latitude'),
+      longitude: _.get(location, 'longitude'),
+      locationAccuracy: _.get(location, 'accuracy'),
+    });
 
     // Recursively call this function, after a 5sec delay
     await delay(5000);
-    audit({ actions, pingEndpoint });
+    audit({ actions, auditRecord, getState, pingEndpoint });
   } catch (error) {
     console.error(error);
     stopAudit();
@@ -46,21 +60,30 @@ async function audit({ actions, pingEndpoint }) {
   }
 }
 
-async function startAudit({ actions, pingEndpoint }) {
+async function startAudit({ actions, getState, pingEndpoint }) {
+  let auditRecord;
   try {
+    auditRecord = await database.createAudit({
+      device: getDeviceInfo(),
+      endpoint: pingEndpoint,
+      network: '', // @TODO: Use https://github.com/ianlin/react-native-carrier-info for carrier name
+      startedAt: new Date().toISOString(),
+    });
     locationSubscription = await Location.watchPositionAsync(
       {
         accuracy: Location.Accuracy.Highest,
         distanceInterval: 1,
       },
-      location => {
-        actions.audit.setLocation(_.get(location, 'coords'));
+      locationUpdate => {
+        actions.audit.setLocation(_.get(locationUpdate, 'coords'));
       },
     );
   } catch (error) {
     console.error(error);
+    stopAudit();
+    actions.audit.stopAudit();
   }
-  audit({ actions, pingEndpoint });
+  audit({ actions, auditRecord, getState, pingEndpoint });
 }
 
 const auditor = store => next => action => {
@@ -68,9 +91,8 @@ const auditor = store => next => action => {
     isAuditing = true;
     const state = store.getState();
     startAudit({
-      actions: {
-        audit: bindActionCreators(auditActions, store.dispatch),
-      },
+      actions: { audit: bindActionCreators(auditActions, store.dispatch) },
+      getState: store.getState,
       pingEndpoint: _.get(state, 'settings.pingEndpoint'),
     });
   }
