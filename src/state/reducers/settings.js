@@ -1,5 +1,5 @@
 const INITIAL_STATE = {
-  pingEndpoint: 'google.com',
+  pingEndpoint: 'https://google.com',
 };
 
 const settingsReducer = (state = INITIAL_STATE, action) => {
