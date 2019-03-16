@@ -5,6 +5,7 @@
 - **startedAt** - text (stores datetime)
 - **network** - text
 - **endpoint** - text
+- **device** - text
 
 ## Ping
 - **id** - integer primary key not null

@@ -39,7 +39,8 @@ const prepare = async () => {
     id integer primary key not null,
     startedAt text,
     network text,
-    endpoint text
+    endpoint text,
+    device text
   );`;
 
   const pingTableSql = `create table if not exists ping (
