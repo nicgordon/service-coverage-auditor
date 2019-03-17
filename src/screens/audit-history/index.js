@@ -36,7 +36,7 @@ class AuditHistoryScreen extends PureComponent {
 
     return (
       <View>
-        <FlatList data={audits} renderItem={audit => <Text>{audit.startedAt}</Text>} />
+        <FlatList data={audits} renderItem={({ item }) => <Text>{item.startedAt}</Text>} />
       </View>
     );
   }
